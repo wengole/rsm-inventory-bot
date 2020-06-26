@@ -1,0 +1,45 @@
+[default]
+log_level = "info"
+esi_callback = "http://127.0.0.1:8080/callback"
+esi_user_agent = "RSM Discord Inventory Bot"
+discord_guild_id = 236596025303760896
+corp_id = 1003900783
+
+
+[[default.ships]]
+id = 597
+name = "Punisher"
+[[default.ships]]
+id = 12019
+name = "Sacrilege"
+[[default.ships]]
+id = 17930
+name = "Worm"
+[[default.ships]]
+id = 582
+name = "Bantam"
+[[default.ships]]
+id = 16236
+name = "Coercer"
+[[default.ships]]
+id = 32874
+name = "Dragoon"
+[[default.ships]]
+id = 624
+name = "Maller"
+[[default.ships]]
+id = 29337
+name = "Navy Augoror"
+[[default.ships]]
+id = 11987
+name = "Guardian"
+[[default.ships]]
+id = 609
+name = "Maulus"
+[[default.ships]]
+id = 584
+name = "Griffin"
+[[default.ships]]
+id = 24696
+name = "Harbinger"
+
