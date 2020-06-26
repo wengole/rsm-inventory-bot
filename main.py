@@ -22,7 +22,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 client = discord.Client()
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
+redis_client = redis.from_url(settings.REDIS_URL)
 cache = RedisCache(redis_client)
 
 esiapp = EsiApp(cache=cache).get_latest_swagger

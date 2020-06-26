@@ -4,6 +4,7 @@ esi_callback = "http://127.0.0.1:8080/callback"
 esi_user_agent = "RSM Discord Inventory Bot"
 discord_guild_id = 236596025303760896
 corp_id = 1003900783
+redis_url = "redis://localhost:6379/0"
 
 
 [[default.ships]]
