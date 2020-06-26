@@ -21,4 +21,5 @@ setup(
     author_email="wengole@gmail.com",
     description="",
     install_requires=install_requires,
+    python_requires=">=3.8, <4",
 )
