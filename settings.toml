@@ -6,6 +6,8 @@ discord_guild_id = 236596025303760896
 corp_id = 1003900783
 redis_url = "redis://localhost:6379/0"
 
+[heroku]
+redis_url = "@format {env[REDIS_URL]}"
 
 [[default.ships]]
 id = 597
