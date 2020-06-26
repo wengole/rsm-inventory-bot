@@ -37,7 +37,7 @@ esisecurity = EsiSecurity(
 
 
 def update_stored_tokens(
-    access_token: str, refresh_token: str, expires_in: int, token_type: str
+    access_token: str, refresh_token: str, expires_in: int, token_type: str, **kwargs
 ):
     redis_client.set(
         "esi_tokens",
