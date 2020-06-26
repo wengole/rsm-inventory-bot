@@ -143,6 +143,10 @@ async def on_message(message: discord.Message):
         structure_response_status = [
             x.status == 200 for x in structure_responses.values()
         ]
+        if not all(structure_response_status):
+            logger.warning(
+                f"Status: {list(structure_responses.values())[0].status} - {list(structure_responses.values())[0].data.error}"
+            )
     structures = [
         int(k)
         for k, v in structure_responses.items()
