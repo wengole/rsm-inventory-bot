@@ -171,7 +171,7 @@ async def on_message(message: discord.Message):
         item_response_status = [x.status == 200 for x in item_responses]
         if not all(item_response_status):
             logger.warning(
-                f"Status: {item_responses[0].status} - {item_responses[0].data.error}"
+                f"Status: {item_responses[0].status} - {item_responses[0].data}"
             )
     items = Counter([x.type_id for response in item_responses for x in response.data])
     ships = {k: v for k, v in items.items() if k in ship_lookup.keys()}
