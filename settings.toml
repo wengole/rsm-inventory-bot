@@ -57,4 +57,15 @@ max = 20
 id = 24696
 name = "Harbinger"
 max = 15
-
+[[default.ships]]
+id = 17619
+name = "Hookbill"
+max = 15
+[[default.ships]]
+id = 625
+name = "Augoror"
+max = 15
+[[default.ships]]
+id = 590
+name = "Inquisitor"
+max = 15
