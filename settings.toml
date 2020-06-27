@@ -12,37 +12,49 @@ redis_url = "@format {env[REDIS_URL]}"
 [[default.ships]]
 id = 597
 name = "Punisher"
+max = 20
 [[default.ships]]
 id = 12019
 name = "Sacrilege"
+max = 10
 [[default.ships]]
 id = 17930
 name = "Worm"
+max = 10
 [[default.ships]]
 id = 582
 name = "Bantam"
+max = 10
 [[default.ships]]
 id = 16236
 name = "Coercer"
+max = 20
 [[default.ships]]
 id = 32874
 name = "Dragoon"
+max = 15
 [[default.ships]]
 id = 624
 name = "Maller"
+max = 10
 [[default.ships]]
 id = 29337
 name = "Navy Augoror"
+max = 15
 [[default.ships]]
 id = 11987
 name = "Guardian"
+max = 5
 [[default.ships]]
 id = 609
 name = "Maulus"
+max = 20
 [[default.ships]]
 id = 584
 name = "Griffin"
+max = 20
 [[default.ships]]
 id = 24696
 name = "Harbinger"
+max = 15
 

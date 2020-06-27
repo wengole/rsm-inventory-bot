@@ -156,7 +156,10 @@ async def on_message(message: discord.Message):
         open_contracts = [
             x for x in open_contracts if x.start_location_id in structures
         ]
-    ship_lookup = {ship["id"]: ship["name"] for ship in settings.SHIPS}
+    ship_lookup = {
+        ship["id"]: {"name": ship["name"], "max": ship["max"]}
+        for ship in settings.SHIPS
+    }
     ops = [
         esiapp.op["get_corporations_corporation_id_contracts_contract_id_items"](
             corporation_id=settings.CORP_ID, contract_id=x.contract_id
@@ -174,7 +177,7 @@ async def on_message(message: discord.Message):
                 f"Status: {item_responses[0].status} - {item_responses[0].data}"
             )
     items = Counter([x.type_id for response in item_responses for x in response.data])
-    ships = {k: v for k, v in items.items() if k in ship_lookup.keys()}
+    ships = {ship_id: items[ship_id] for ship_id in ship_lookup.keys()}
     embed = Embed(
         description=f"Doctrine ships on contract in {system_name}",
         color=0x03FC73,
@@ -186,7 +189,10 @@ async def on_message(message: discord.Message):
     )
     embed.set_thumbnail(url="https://images.evetech.net/types/597/render?size=64")
     for ship_id, count in ships.items():
-        embed.add_field(name=ship_lookup[ship_id], value=f"{count}")
+        embed.add_field(
+            name=ship_lookup[ship_id]["name"],
+            value=f"{count}/{ship_lookup[ship_id]['max']}",
+        )
     embed_dict = embed.to_dict()
     redis_client.set(f"rsm_inventory_output", json.dumps(embed_dict), ex=300)
     await channel.send(content="", embed=discord.Embed.from_dict(embed_dict))
