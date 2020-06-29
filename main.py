@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import math
 import re
 import sys
 from collections import Counter
@@ -34,6 +35,21 @@ esisecurity = EsiSecurity(
     secret_key=settings.ESI_SECRET_KEY,
     headers={"User-Agent": settings.ESI_USER_AGENT},
 )
+
+
+millnames = ["", " k", " M", " B", " T"]
+
+
+def millify(n):
+    n = float(n)
+    millidx = max(
+        0,
+        min(
+            len(millnames) - 1, int(math.floor(0 if n == 0 else math.log10(abs(n)) / 3))
+        ),
+    )
+
+    return f"{n / 10 ** (3 * millidx):.1f}{millnames[millidx]}"
 
 
 def update_stored_tokens(
@@ -189,9 +205,10 @@ async def on_message(message: discord.Message):
     )
     embed.set_thumbnail(url="https://images.evetech.net/types/597/render?size=64")
     for ship_id, count in ships.items():
+        price = ship_lookup[ship_id].get("price", None) or settings.PRICE
+        name = f"{ship_lookup[ship_id]['name']} {millify(price)}"
         embed.add_field(
-            name=ship_lookup[ship_id]["name"],
-            value=f"{count}/{ship_lookup[ship_id]['max']}",
+            name=name, value=f"{count}/{ship_lookup[ship_id]['max']}",
         )
     embed_dict = embed.to_dict()
     redis_client.set(f"rsm_inventory_output", json.dumps(embed_dict), ex=300)
