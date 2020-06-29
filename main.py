@@ -172,10 +172,7 @@ async def on_message(message: discord.Message):
         open_contracts = [
             x for x in open_contracts if x.start_location_id in structures
         ]
-    ship_lookup = {
-        ship["id"]: {"name": ship["name"], "max": ship["max"]}
-        for ship in settings.SHIPS
-    }
+    ship_lookup = {ship["id"]: ship for ship in settings.SHIPS}
     ops = [
         esiapp.op["get_corporations_corporation_id_contracts_contract_id_items"](
             corporation_id=settings.CORP_ID, contract_id=x.contract_id
