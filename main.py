@@ -205,7 +205,7 @@ async def on_message(message: discord.Message):
         price = ship_lookup[ship_id].get("price", None) or settings.PRICE
         name = f"{ship_lookup[ship_id]['name']} {millify(price)}"
         embed.add_field(
-            name=name, value=f"{count}/{ship_lookup[ship_id]['max']}",
+            name=name, value=f"{count} of {ship_lookup[ship_id]['max']}",
         )
     embed_dict = embed.to_dict()
     redis_client.set(f"rsm_inventory_output", json.dumps(embed_dict), ex=300)

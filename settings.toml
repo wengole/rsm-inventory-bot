@@ -74,3 +74,9 @@ max = 15
 id = 590
 name = "Inquisitor"
 max = 15
+price = 15000000
+[[default.ships]]
+id = 24692
+name = "Abaddon"
+max = 15
+price = 380000000
