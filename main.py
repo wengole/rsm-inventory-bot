@@ -152,6 +152,7 @@ async def on_message(message: discord.Message):
     structure_response_status = [False]
     structure_responses = []
     while not all(structure_response_status):
+        await asyncio.sleep(0.1)
         structure_responses = {
             x[0]._p["path"]["structure_id"]: x[1]
             for x in esiclient.multi_request(ops, thread=5)
