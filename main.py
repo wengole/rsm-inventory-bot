@@ -189,10 +189,11 @@ async def on_message(message: discord.Message):
         await asyncio.sleep(0.1)
         item_responses = [x[1] for x in esiclient.multi_request(ops, threads=5)]
         item_response_status = [x.status == 200 for x in item_responses]
-        if not all(item_response_status):
-            logger.warning(
-                f"Status: {item_responses[0].status} - {item_responses[0].data}"
-            )
+        response_errors = [x for x in item_responses if x.status != 200]
+        if any(response_errors):
+            logger.error(f"{len(response_errors)} errors")
+            for response in response_errors:
+                logger.error(f"{response.data.error}")
     items = Counter([x.type_id for response in item_responses for x in response.data])
     ships = {ship_id: items[ship_id] for ship_id in ship_lookup.keys()}
     embed = Embed(
