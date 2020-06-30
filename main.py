@@ -144,7 +144,9 @@ async def on_message(message: discord.Message):
         esisecurity.refresh()
         contracts = esiclient.request(op)
     open_contracts = [x for x in contracts.data if x.status == "outstanding"]
-    structure_ids = {x.start_location_id for x in contracts.data}
+    structure_ids = {
+        x.start_location_id for x in contracts.data if x.start_location_id >= 100000000
+    }
     ops = [
         esiapp.op["get_universe_structures_structure_id"](structure_id=x)
         for x in structure_ids
@@ -160,10 +162,11 @@ async def on_message(message: discord.Message):
         structure_response_status = [
             x.status == 200 for x in structure_responses.values()
         ]
-        if not all(structure_response_status):
-            logger.warning(
-                f"Status: {list(structure_responses.values())[0].status} - {list(structure_responses.values())[0].data.error}"
-            )
+        response_errors = [x for x in structure_responses.values() if x.status != 200]
+        if any(response_errors):
+            logger.error(f"{len(response_errors)} errors")
+            for response in response_errors:
+                logger.error(f"{response.data.error}")
     structures = [
         int(k)
         for k, v in structure_responses.items()
