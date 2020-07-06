@@ -38,6 +38,7 @@ class InterceptHandler(logging.Handler):
 
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0)
+logger.setLevel(LOG_LEVEL)
 client = discord.Client()
 redis_client = redis.from_url(settings.REDIS_URL)
 cache = RedisCache(redis_client)
