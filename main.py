@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import re
+import sys
 from collections import Counter
 from datetime import datetime
 
@@ -15,7 +16,7 @@ from esipy.cache import RedisCache
 from esipy.events import AFTER_TOKEN_REFRESH
 from loguru import logger
 
-LOG_LEVEL = getattr(logging, settings.LOG_LEVEL.upper())
+LOG_LEVEL = settings.LOG_LEVEL.upper()
 
 
 class InterceptHandler(logging.Handler):
@@ -38,7 +39,7 @@ class InterceptHandler(logging.Handler):
 
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0)
-logger.setLevel(LOG_LEVEL)
+logger.add(sys.stderr, level=LOG_LEVEL)
 client = discord.Client()
 redis_client = redis.from_url(settings.REDIS_URL)
 cache = RedisCache(redis_client)
