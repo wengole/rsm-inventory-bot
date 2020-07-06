@@ -95,7 +95,10 @@ update_stored_tokens(
 
 # init the client
 esiclient = EsiClient(
-    security=esisecurity, cache=cache, headers={"User-Agent": settings.ESI_USER_AGENT},
+    retry_requests=True,
+    security=esisecurity,
+    cache=cache,
+    headers={"User-Agent": settings.ESI_USER_AGENT},
 )
 AFTER_TOKEN_REFRESH.add_receiver(update_stored_tokens)
 
@@ -151,22 +154,14 @@ async def on_message(message: discord.Message):
         esiapp.op["get_universe_structures_structure_id"](structure_id=x)
         for x in structure_ids
     ]
-    structure_response_status = [False]
-    structure_responses = []
-    while not all(structure_response_status):
-        await asyncio.sleep(0.1)
-        structure_responses = {
-            x[0]._p["path"]["structure_id"]: x[1]
-            for x in esiclient.multi_request(ops, thread=5)
-        }
-        structure_response_status = [
-            x.status == 200 for x in structure_responses.values()
-        ]
-        response_errors = [x for x in structure_responses.values() if x.status != 200]
-        if any(response_errors):
-            logger.error(f"{len(response_errors)} errors")
-            for response in response_errors:
-                logger.error(f"{response.data.error}")
+    structure_responses = {
+        x[0]._p["path"]["structure_id"]: x[1] for x in esiclient.multi_request(ops)
+    }
+    response_errors = [x for x in structure_responses.values() if x.status != 200]
+    if any(response_errors):
+        logger.error(f"{len(response_errors)} errors")
+        for response in response_errors:
+            logger.error(f"{response.data.error}")
     structures = [
         int(k)
         for k, v in structure_responses.items()
@@ -176,25 +171,47 @@ async def on_message(message: discord.Message):
         open_contracts = [
             x for x in open_contracts if x.start_location_id in structures
         ]
+    open_contracts = {x.contract_id: x for x in open_contracts}
+    contracts_to_load = []
+    for contract_id in open_contracts.keys():
+        contract = redis_client.get(f"parsed_contract_{contract_id}")
+        if contract:
+            open_contracts[contract_id] = json.loads(contract)
+        else:
+            contracts_to_load.append(contract_id)
     ship_lookup = {ship["id"]: ship for ship in settings.SHIPS}
     ops = [
         esiapp.op["get_corporations_corporation_id_contracts_contract_id_items"](
-            corporation_id=settings.CORP_ID, contract_id=x.contract_id
+            corporation_id=settings.CORP_ID, contract_id=contract_id
         )
-        for x in open_contracts
+        for contract_id in contracts_to_load
     ]
-    item_response_status = [False]
-    item_responses = []
-    while not all(item_response_status):
-        await asyncio.sleep(0.1)
-        item_responses = [x[1] for x in esiclient.multi_request(ops, threads=5)]
-        item_response_status = [x.status == 200 for x in item_responses]
-        response_errors = [x for x in item_responses if x.status != 200]
-        if any(response_errors):
-            logger.error(f"{len(response_errors)} errors")
-            for response in response_errors:
-                logger.error(f"{response.data.error}")
-    items = Counter([x.type_id for response in item_responses for x in response.data])
+    reqs_and_resps = esiclient.multi_request(ops)
+    for req, response in reqs_and_resps:
+        contract_id = int(req._p["path"]["contract_id"])
+        if response.data is not None and response.status == 200:
+            open_contracts[contract_id].items = response.data
+            redis_client.set(
+                f"parsed_contract_{contract_id}",
+                json.dumps(open_contracts[contract_id], default=str),
+            )
+        elif response.data is None:
+            logger.warning("No response data for {}", contract_id)
+            open_contracts.pop(contract_id)
+        else:
+            logger.warning(
+                "Response for {} was {response.status}: {response.data}",
+                contract_id,
+                response=response,
+            )
+            open_contracts.pop(contract_id)
+    items = Counter(
+        [
+            x["type_id"]
+            for contract in open_contracts.values()
+            for x in contract.get("items", [])
+        ]
+    )
     ships = {ship_id: items[ship_id] for ship_id in ship_lookup.keys()}
     embed = Embed(
         description=f"Doctrine ships on contract in {system_name}",
@@ -213,7 +230,6 @@ async def on_message(message: discord.Message):
             name=name, value=f"{count} of {ship_lookup[ship_id]['max']}",
         )
     embed_dict = embed.to_dict()
-    redis_client.set(f"rsm_inventory_output", json.dumps(embed_dict), ex=300)
     await channel.send(content="", embed=discord.Embed.from_dict(embed_dict))
 
 
