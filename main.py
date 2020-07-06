@@ -3,7 +3,6 @@ import json
 import logging
 import math
 import re
-import sys
 from collections import Counter
 from datetime import datetime
 
@@ -14,14 +13,31 @@ from dynaconf import settings
 from esipy import EsiApp, EsiSecurity, EsiClient
 from esipy.cache import RedisCache
 from esipy.events import AFTER_TOKEN_REFRESH
+from loguru import logger
 
 LOG_LEVEL = getattr(logging, settings.LOG_LEVEL.upper())
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="%(name)-25.25s[%(lineno)-6d] : %(funcName)-18.18s : %(levelname)-8s %(message)s",
-    stream=sys.stdout,
-)
-logger = logging.getLogger(__name__)
+
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        # Get corresponding Loguru level if it exists
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message
+        frame, depth = logging.currentframe(), 2
+        while frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
+
+
+logging.basicConfig(handlers=[InterceptHandler()], level=0)
 client = discord.Client()
 redis_client = redis.from_url(settings.REDIS_URL)
 cache = RedisCache(redis_client)

@@ -9,6 +9,7 @@ install_requires = [
     "redis==3.5.3",
     "requests==2.24.0",
     "dhooks==1.1.3",
+    "loguru==0.5.1",
 ]
 
 setup(
